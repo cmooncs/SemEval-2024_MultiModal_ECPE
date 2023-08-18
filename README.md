@@ -22,4 +22,4 @@
 
 ## Multimodal Sentiment Detection
 
-- [Multimodal Sentiment Detection Based on Multi-channel Graph Neural Networks](https://aclanthology.org/2021.acl-long.28.pdf)
+- [Multimodal Sentiment Detection Based on Multi-channel Graph Neural Networks](https://aclanthology.org/2021.acl-long.28.pdf) :shipit:
