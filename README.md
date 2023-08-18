@@ -8,8 +8,17 @@
 
 -[Cao, Q., Hao, X., Ren, H., Xu, W., Xu, S., & Asiedu, C. J. (2022). Graph attention network based detection of causality for textual emotion-cause pair. World Wide Web, 1-15.](https://link.springer.com/article/10.1007/s11280-022-01111-5)
 
+-[Emotion-Cause Pair Extraction as Sequence Labeling Based on A Novel Tagging Scheme](https://aclanthology.org/2020.emnlp-main.289.pdf)
+
+-[End-to-End Emotion-Cause Pair Extraction with Graph Convolutional Network](https://aclanthology.org/2020.coling-main.17.pdf)
+
+-[Transition-based Directed Graph Construction for Emotion-Cause Pair Extraction](https://aclanthology.org/2020.acl-main.342.pdf)
+
 -
+
 ## Multimodal ECE/ECPE
+[COGMEN: COntextualized GNN based Multimodal Emotion recognitioN](https://aclanthology.org/2022.naacl-main.306.pdf)
+
 
 ## Multimodal Sentiment Detection
 
