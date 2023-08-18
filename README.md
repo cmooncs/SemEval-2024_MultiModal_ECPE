@@ -19,7 +19,7 @@
 - [Chen, F., Shi, Z., Yang, Z., & Huang, Y. (2022). Recurrent synchronization network for emotion-cause pair extraction. Knowledge-Based Systems, 238, 107965.](https://www.sciencedirect.com/science/article/pii/S0950705121010923)
 
 ## Multimodal ECE/ECPE :tada:
-- [COGMEN: COntextualized GNN based Multimodal Emotion recognitioN](https://aclanthology.org/2022.naacl-main.306.pdf)
+- [Joshi, A., Bhat, A., Jain, A., Singh, A. V., & Modi, A. (2022). COGMEN: COntextualized GNN based multimodal emotion recognitioN. arXiv preprint arXiv:2205.02455.](https://aclanthology.org/2022.naacl-main.306.pdf) :shipit:
 
 - [Wang, F., Ding, Z., Xia, R., Li, Z., & Yu, J. (2021). Multimodal emotion-cause pair extraction in conversations. arXiv preprint arXiv:2110.08020.](https://arxiv.org/pdf/2110.08020.pdf)
 
@@ -33,4 +33,4 @@
 
 - [Riyadh, M., & Shafiq, M. O. (2022, December). Towards Emotion Cause Generation in Natural Language Processing using Deep Learning. In 2022 21st IEEE International Conference on Machine Learning and Applications (ICMLA) (pp. 140-147). IEEE.](https://ieeexplore.ieee.org/abstract/document/10069911)
 
-- [Multimodal Sentiment Detection Based on Multi-channel Graph Neural Networks](https://aclanthology.org/2021.acl-long.28.pdf) :shipit:
+- [Multimodal Sentiment Detection Based on Multi-channel Graph Neural Networks](https://aclanthology.org/2021.acl-long.28.pdf) 
