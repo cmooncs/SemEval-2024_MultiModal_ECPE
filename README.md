@@ -16,7 +16,7 @@
 
 -
 
-## Multimodal ECE/ECPE
+## Multimodal ECE/ECPE :tada:
 - [COGMEN: COntextualized GNN based Multimodal Emotion recognitioN](https://aclanthology.org/2022.naacl-main.306.pdf)
 
 
