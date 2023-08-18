@@ -18,6 +18,18 @@
 
 - [Chen, F., Shi, Z., Yang, Z., & Huang, Y. (2022). Recurrent synchronization network for emotion-cause pair extraction. Knowledge-Based Systems, 238, 107965.](https://www.sciencedirect.com/science/article/pii/S0950705121010923)
 
+- [Jeong, D., & Bak, J. (2023, May). Conversational Emotion-Cause Pair Extraction with Guided Mixture of Experts. In Proceedings of the 17th Conference of the European Chapter of the Association for Computational Linguistics (pp. 3280-3290).](https://aclanthology.org/2023.eacl-main.240.pdf)
+
+- [Cheng, Z., Jiang, Z., Yin, Y., Wang, C., Ge, S., & Gu, Q. (2023). A consistent dual-mrc framework for emotion-cause pair extraction. ACM Transactions on Information Systems, 41(4), 1-27.](https://dl.acm.org/doi/10.1145/3558548)
+
+- [Fan, W., Zhu, Y., Wei, Z., Yang, T., Ip, W. H., & Zhang, Y. (2021). Order-guided deep neural network for emotion-cause pair prediction. Applied Soft Computing, 112, 107818.](https://www.sciencedirect.com/science/article/pii/S1568494621007390)
+
+- [Xing, B., & Tsang, I. W. (2023). Co-evolving Graph Reasoning Network for Emotion-Cause Pair Extraction. arXiv preprint arXiv:2306.04340.](https://arxiv.org/pdf/2306.04340.pdf)
+
+- [Bhat, A., & Modi, A. (2023, January). Multi-task learning framework for extracting emotion cause span and entailment in conversations. In Transfer Learning for Natural Language Processing Workshop (pp. 33-51). PMLR.](https://proceedings.mlr.press/v203/bhat23a/bhat23a.pdf)
+
+- 
+
 ## Multimodal ECE/ECPE :tada:
 - [Joshi, A., Bhat, A., Jain, A., Singh, A. V., & Modi, A. (2022). COGMEN: COntextualized GNN based multimodal emotion recognitioN. arXiv preprint arXiv:2205.02455.](https://aclanthology.org/2022.naacl-main.306.pdf) :shipit:
 
@@ -29,6 +41,8 @@
 
 - 
 ## Others
+
+- Emotion Recognition in Conversations [GitHub](https://github.com/declare-lab/conv-emotion)
 - [Kong, D., Yu, N., Yuan, Y., Fu, G., & Gong, C. (2022). Discourse-Aware Emotion Cause Extraction in Conversations. arXiv preprint arXiv:2210.14419.](https://arxiv.org/pdf/2210.14419.pdf)
 
 - [Riyadh, M., & Shafiq, M. O. (2022, December). Towards Emotion Cause Generation in Natural Language Processing using Deep Learning. In 2022 21st IEEE International Conference on Machine Learning and Applications (ICMLA) (pp. 140-147). IEEE.](https://ieeexplore.ieee.org/abstract/document/10069911)
