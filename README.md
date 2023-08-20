@@ -31,13 +31,26 @@
 - 
 
 ## Multimodal ECE/ECPE :tada:
-- [Joshi, A., Bhat, A., Jain, A., Singh, A. V., & Modi, A. (2022). COGMEN: COntextualized GNN based multimodal emotion recognitioN. arXiv preprint arXiv:2205.02455.](https://aclanthology.org/2022.naacl-main.306.pdf) :shipit:
+- [Joshi, A., Bhat, A., Jain, A., Singh, A. V., & Modi, A. (2022). COGMEN: COntextualized GNN based multimodal emotion recognition. arXiv preprint arXiv:2205.02455.](https://aclanthology.org/2022.naacl-main.306.pdf) :shipit:
 
 - [Wang, F., Ding, Z., Xia, R., Li, Z., & Yu, J. (2021). Multimodal emotion-cause pair extraction in conversations. arXiv preprint arXiv:2110.08020.](https://arxiv.org/pdf/2110.08020.pdf)
 
 - [Zheng, W., Yu, J., Xia, R., & Wang, S. (2023, July). A Facial Expression-Aware Multimodal Multi-task Learning Framework for Emotion Recognition in Multi-party Conversations. In Proceedings of the 61st Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) (pp. 15445-15459).](https://aclanthology.org/2023.acl-long.861.pdf)
 
 - [Zhou, J., Li, F., Teng, C., Liu, Y., Xiang, C., & Ji, D. (2023). MOIT: A Novel task for mining opinions towards implicit targets. Engineering Applications of Artificial Intelligence, 126, 106841.](https://www.sciencedirect.com/science/article/pii/S0952197623010254)
+
+## MultiModal Graph-Based Emotion Recognition 
+- [Zhang, X., & Li, Y. (2023). A Cross-Modality Context Fusion and Semantic Refinement Network for Emotion Recognition in Conversation. Annual Meeting of the Association for Computational Linguistics.](https://www.aclanthology.org/2023.acl-long.732.pdf)
+
+- [Joshi, A., Bhat, A., Jain, A., Singh, A. V., & Modi, A. (2022). COGMEN: COntextualized GNN based multimodal emotion recognition. arXiv preprint arXiv:2205.02455.](https://aclanthology.org/2022.naacl-main.306.pdf)
+
+- [Hu, D., Hou, X., Wei, L., Jiang, L., & Mo, Y. (2022). MM-DFN: Multimodal Dynamic Fusion Network for Emotion Recognition in Conversations. ICASSP 2022 - 2022 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP), 7037-7041.](https://arxiv.org/pdf/2203.02385.pdf)
+
+- [Fu, Y., Okada, S., Wang, L., Guo, L., Song, Y., Liu, J., & Dang, J. (2022). Context- and Knowledge-Aware Graph Convolutional Network for Multimodal Emotion Recognition. IEEE MultiMedia, 29, 91-100.](https://ieeexplore.ieee.org/document/9772497)
+
+- [Hu, J., Liu, Y., Zhao, J., & Jin, Q. (2021). MMGCN: Multimodal Fusion via Deep Graph Convolution Network for Emotion Recognition in Conversation. ArXiv, abs/2107.06779.](https://arxiv.org/pdf/2107.06779.pdf)
+
+- [Fu, Y., Okada, S., Wang, L., Guo, L., Song, Y., Liu, J., & Dang, J. (2021). CONSK-GCN: Conversational Semantic- and Knowledge-Oriented Graph Convolutional Network for Multimodal Emotion Recognition. 2021 IEEE International Conference on Multimedia and Expo (ICME), 1-6.](https://ieeexplore.ieee.org/document/9428438)
 
 - 
 ## Others
