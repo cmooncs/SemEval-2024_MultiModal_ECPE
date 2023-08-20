@@ -52,7 +52,18 @@
 
 - [Fu, Y., Okada, S., Wang, L., Guo, L., Song, Y., Liu, J., & Dang, J. (2021). CONSK-GCN: Conversational Semantic- and Knowledge-Oriented Graph Convolutional Network for Multimodal Emotion Recognition. 2021 IEEE International Conference on Multimedia and Expo (ICME), 1-6.](https://ieeexplore.ieee.org/document/9428438)
 
-- 
+## Unimodal Graph-Based ECE/ECPE
+
+- [Cao, Q., Hao, X., Ren, H. et al. Graph attention network based detection of causality for textual emotion-cause pair. World Wide Web 26, 1731–1745 (2023).](https://link.springer.com/article/10.1007/s11280-022-01111-5#Sec1)
+
+- [Yan, H., Gui, L., Pergola, G., & He, Y. (2021). Position bias mitigation: A knowledge-aware graph model for emotion cause extraction. arXiv preprint arXiv:2106.03518.](https://arxiv.org/pdf/2106.03518.pdf)
+
+- [Zhao, W., Zhao, Y., Li, Z., & Qin, B. (2022). Knowledge-Bridged Causal Interaction Network for Causal Emotion Entailment. AAAI Conference on Artificial Intelligence.](https://arxiv.org/pdf/2212.02995.pdf)
+  
+- [Xiangju Li, Wei Gao, Shi Feng, Daling Wang, and Shafiq Joty. 2021. Span-Level Emotion Cause Analysis by BERT-based Graph Attention Network. In Proceedings of the 30th ACM International Conference on Information & Knowledge Management (CIKM '21). Association for Computing Machinery, New York, NY, USA, 3221–3226.](https://dl.acm.org/doi/pdf/10.1145/3459637.3482185)
+
+- [Zheng, L., Ji, D., Li, F., Fei, H., Wu, S., Li, J., ... & Teng, C. (2023). ECQED: Emotion-Cause Quadruple Extraction in Dialogs. arXiv preprint arXiv:2306.03969.](https://arxiv.org/pdf/2306.03969.pdf)
+
 ## Others
 
 - Emotion Recognition in Conversations [GitHub](https://github.com/declare-lab/conv-emotion)
