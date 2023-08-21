@@ -72,7 +72,7 @@
 
 ## Surveys/Resources/ Others
 
--[Recent Trends in Deep Learning Based Textual Emotion Cause Extraction](https://ieeexplore.ieee.org/document/10172006)
+- Recent Trends in Deep Learning Based Textual Emotion Cause Extraction [Survey Paper](https://ieeexplore.ieee.org/document/10172006)
 
 - Emotion Recognition in Conversations [GitHub](https://github.com/declare-lab/conv-emotion)
 
