@@ -71,7 +71,8 @@
 - [Zheng, L., Ji, D., Li, F., Fei, H., Wu, S., Li, J., ... & Teng, C. (2023). ECQED: Emotion-Cause Quadruple Extraction in Dialogs. arXiv preprint arXiv:2306.03969.](https://arxiv.org/pdf/2306.03969.pdf)
 
 ## Surveys/Resources/ Others
--[Recent Trends in Deep Learning Based Textual Emotion Cause Extraction]([https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=10172006&casa_token=rlkmIrP7Q0MAAAAA:F198yb_ZMcbZ29WDgi7K8frlihzVshM19Whz3-aHnO8Hj2-m6Rd0cbilCXud2yFTjQE3Swkc](https://ieeexplore.ieee.org/document/10172006))
+
+-[Recent Trends in Deep Learning Based Textual Emotion Cause Extraction](https://ieeexplore.ieee.org/document/10172006)
 
 - Emotion Recognition in Conversations [GitHub](https://github.com/declare-lab/conv-emotion)
 
