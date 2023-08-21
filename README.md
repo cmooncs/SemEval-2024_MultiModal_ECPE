@@ -71,4 +71,5 @@
 
 - [Riyadh, M., & Shafiq, M. O. (2022, December). Towards Emotion Cause Generation in Natural Language Processing using Deep Learning. In 2022 21st IEEE International Conference on Machine Learning and Applications (ICMLA) (pp. 140-147). IEEE.](https://ieeexplore.ieee.org/abstract/document/10069911)
 
-- [Multimodal Sentiment Detection Based on Multi-channel Graph Neural Networks](https://aclanthology.org/2021.acl-long.28.pdf) 
+- [Yang, X., Feng, S., Zhang, Y., & Wang, D. (2021, August). Multimodal sentiment detection based on multi-channel graph neural networks. In Proceedings of the 59th Annual Meeting of the Association for Computational Linguistics and the 11th International Joint Conference on Natural Language Processing (Volume 1: Long Papers) (pp. 328-339).](https://aclanthology.org/2021.acl-long.28.pdf)
+- [Ahmed, N., Al Aghbari, Z., & Girija, S. (2023). A systematic survey on multimodal emotion recognition using learning algorithms. Intelligent Systems with Applications, 17, 200171](https://www.sciencedirect.com/science/article/pii/S2667305322001089/pdf)
