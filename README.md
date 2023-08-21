@@ -12,6 +12,8 @@
 
 - [Chen, Y., Hou, W., Li, S., Wu, C., & Zhang, X. (2020, December). End-to-end emotion-cause pair extraction with graph convolutional network. In Proceedings of the 28th International Conference on Computational Linguistics (pp. 198-207).](https://aclanthology.org/2020.coling-main.17.pdf)
 
+- [Zhao, W., Zhao, Y., & Lu, X. (2022, July). Cauain: Causal aware interaction network for emotion recognition in conversations. In Proceedings of the Thirty-First International Joint Conference on Artificial Intelligence, IJCAI (pp. 4524-4530)](https://www.ijcai.org/proceedings/2022/0628.pdf)
+
 - [Fan, C., Yuan, C., Du, J., Gui, L., Yang, M., & Xu, R. (2020, July). Transition-based directed graph construction for emotion-cause pair extraction. In Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics (pp. 3707-3717).](https://aclanthology.org/2020.acl-main.342.pdf)
 
 - [Wang, Y., Li, Y., Yu, K., & Hu, Y. (2023, May). Knowledge-Enhanced Hierarchical Transformers for Emotion-Cause Pair Extraction. In Pacific-Asia Conference on Knowledge Discovery and Data Mining (pp. 112-123). Cham: Springer Nature Switzerland.](https://link.springer.com/chapter/10.1007/978-3-031-33383-5_9)
@@ -28,7 +30,7 @@
 
 - [Bhat, A., & Modi, A. (2023, January). Multi-task learning framework for extracting emotion cause span and entailment in conversations. In Transfer Learning for Natural Language Processing Workshop (pp. 33-51). PMLR.](https://proceedings.mlr.press/v203/bhat23a/bhat23a.pdf)
 
-- 
+- [Ping, H., Zhang, D., Zhu, S., Li, J., & Zhou, G. (2023). A Benchmark for Hierarchical Emotion Cause Extraction in Spoken Dialogues. IEEE Signal Processing Letters.](https://ieeexplore.ieee.org/document/10120756)
 
 ## Multimodal ECE/ECPE :tada:
 - [Joshi, A., Bhat, A., Jain, A., Singh, A. V., & Modi, A. (2022). COGMEN: COntextualized GNN based multimodal emotion recognition. arXiv preprint arXiv:2205.02455.](https://aclanthology.org/2022.naacl-main.306.pdf) :shipit:
@@ -54,6 +56,8 @@
 
 - [Li, J., Wang, X., Lv, G., & Zeng, Z. (2022). GraphMFT: A Graph Attention based Multimodal Fusion Technique for Emotion Recognition in Conversation. arXiv preprint arXiv:2208.00339.](https://arxiv.org/pdf/2208.00339.pdf)
 
+- [Gu, X., Lou, R., Sun, L., & Li, S. (2023, June). PAGE: A Position-Aware Graph-Based Model for Emotion Cause Entailment in Conversation. In ICASSP 2023-2023 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP) (pp. 1-5). IEEE.(https://arxiv.org/pdf/2303.01795.pdf)
+
 ## Unimodal Graph-Based ECE/ECPE
 
 - [Cao, Q., Hao, X., Ren, H. et al. Graph attention network based detection of causality for textual emotion-cause pair. World Wide Web 26, 1731–1745 (2023).](https://link.springer.com/article/10.1007/s11280-022-01111-5#Sec1)
@@ -66,7 +70,8 @@
 
 - [Zheng, L., Ji, D., Li, F., Fei, H., Wu, S., Li, J., ... & Teng, C. (2023). ECQED: Emotion-Cause Quadruple Extraction in Dialogs. arXiv preprint arXiv:2306.03969.](https://arxiv.org/pdf/2306.03969.pdf)
 
-## Others
+## Surveys/Resources/ Others
+-[Recent Trends in Deep Learning Based Textual Emotion Cause Extraction]([https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=10172006&casa_token=rlkmIrP7Q0MAAAAA:F198yb_ZMcbZ29WDgi7K8frlihzVshM19Whz3-aHnO8Hj2-m6Rd0cbilCXud2yFTjQE3Swkc](https://ieeexplore.ieee.org/document/10172006))
 
 - Emotion Recognition in Conversations [GitHub](https://github.com/declare-lab/conv-emotion)
 
