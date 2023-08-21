@@ -52,6 +52,8 @@
 
 - [Fu, Y., Okada, S., Wang, L., Guo, L., Song, Y., Liu, J., & Dang, J. (2021). CONSK-GCN: Conversational Semantic- and Knowledge-Oriented Graph Convolutional Network for Multimodal Emotion Recognition. 2021 IEEE International Conference on Multimedia and Expo (ICME), 1-6.](https://ieeexplore.ieee.org/document/9428438)
 
+- [Li, J., Wang, X., Lv, G., & Zeng, Z. (2022). GraphMFT: A Graph Attention based Multimodal Fusion Technique for Emotion Recognition in Conversation. arXiv preprint arXiv:2208.00339.](https://arxiv.org/pdf/2208.00339.pdf)
+
 ## Unimodal Graph-Based ECE/ECPE
 
 - [Cao, Q., Hao, X., Ren, H. et al. Graph attention network based detection of causality for textual emotion-cause pair. World Wide Web 26, 1731–1745 (2023).](https://link.springer.com/article/10.1007/s11280-022-01111-5#Sec1)
@@ -67,6 +69,8 @@
 ## Others
 
 - Emotion Recognition in Conversations [GitHub](https://github.com/declare-lab/conv-emotion)
+
+- MuTEC: An end to end Multi-Task learning framework for extractingEmotions and emotion Cause in conversations [GitHub](https://github.com/Exploration-Lab/MuTEC)
 - [Kong, D., Yu, N., Yuan, Y., Fu, G., & Gong, C. (2022). Discourse-Aware Emotion Cause Extraction in Conversations. arXiv preprint arXiv:2210.14419.](https://arxiv.org/pdf/2210.14419.pdf)
 
 - [Riyadh, M., & Shafiq, M. O. (2022, December). Towards Emotion Cause Generation in Natural Language Processing using Deep Learning. In 2022 21st IEEE International Conference on Machine Learning and Applications (ICMLA) (pp. 140-147). IEEE.](https://ieeexplore.ieee.org/abstract/document/10069911)
