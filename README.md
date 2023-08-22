@@ -44,8 +44,6 @@
 ## MultiModal Graph-Based Emotion Recognition 
 - Zhang, X., & Li, Y. (2023). A Cross-Modality Context Fusion and Semantic Refinement Network for Emotion Recognition in Conversation. Annual Meeting of the Association for Computational Linguistics. [Paper](https://www.aclanthology.org/2023.acl-long.732.pdf)
 
-- Joshi, A., Bhat, A., Jain, A., Singh, A. V., & Modi, A. (2022). COGMEN: COntextualized GNN based multimodal emotion recognition. arXiv preprint arXiv:2205.02455. [Paper](https://aclanthology.org/2022.naacl-main.306.pdf)
-
 - Hu, D., Hou, X., Wei, L., Jiang, L., & Mo, Y. (2022). MM-DFN: Multimodal Dynamic Fusion Network for Emotion Recognition in Conversations. ICASSP 2022 - 2022 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP), 7037-7041. [Paper](https://arxiv.org/pdf/2203.02385.pdf)
 
 - Fu, Y., Okada, S., Wang, L., Guo, L., Song, Y., Liu, J., & Dang, J. (2022). Context- and Knowledge-Aware Graph Convolutional Network for Multimodal Emotion Recognition. IEEE MultiMedia, 29, 91-100. [Paper](https://ieeexplore.ieee.org/document/9772497)
