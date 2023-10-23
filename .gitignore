@@ -1,0 +1,6 @@
+__pycache__/
+data/train*
+data/videos
+data/saved/*.pkl
+mecpevenv/
+wandb/
