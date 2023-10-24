@@ -67,7 +67,7 @@ class Wrapper():
             # Model, loss fn and optimizer
             self.model = EmotionCausePairClassifierModel(args)
             self.model.to(self.device)
-            self.criterion = nn.BCELoss(reduction='none') # apply reduction = 'none'?
+            self.criterion = nn.BCEWithLogitsLoss() # apply reduction = 'none'?
             self.optimizer = optim.Adam(self.model.parameters(), lr=self.lr)
 
             # Training and Validation loop
@@ -158,17 +158,20 @@ class Wrapper():
         self.model.train()
         y_preds = self.model(emotion_idxs_b, bert_token_b, bert_segment_b, bert_masks_b, bert_utt_b, convo_len_b, adj_b)
         y_causes_b = torch.tensor(y_causes_b, dtype=torch.float32).to(self.device)
-        y_mask_b = torch.tensor(y_mask_b, dtype=torch.float32).to(self.device)
-        loss = self.criterion(y_preds, y_causes_b)
-        masked_loss = torch.sum(loss * y_mask_b)
-        loss = masked_loss / y_mask_b.sum() #only consider the outputs for actual utt emb, not paddings
+        y_mask_b = torch.tensor(y_mask_b).bool().to(self.device)
+        y_preds = y_preds.masked_select(y_mask_b)
+        y_causes_b = y_causes_b.masked_select(y_mask_b)
         binary_y_preds = (y_preds > self.threshold).float()
+
+        loss = self.criterion(y_preds, y_causes_b)
+        loss = torch.sum(loss) / len(y_preds)
+
         correct = (binary_y_preds == y_causes_b).sum().item()
         # print(f"Correct = {correct}")
 
         self.model.zero_grad()
         self.optimizer.zero_grad()
-        loss.backward(retain_graph=True)
+        loss.backward()
         self.optimizer.step()
         return loss.item(), correct
 
@@ -215,29 +218,31 @@ class Wrapper():
         self.model.eval()
         y_preds = self.model(emotion_idxs_b, bert_token_b, bert_segment_b, bert_masks_b, bert_utt_b, convo_len_b, adj_b)
         y_causes_b = torch.tensor(y_causes_b, dtype=torch.float32).to(self.device)
-        y_mask_b = torch.tensor(y_mask_b, dtype=torch.float32).to(self.device)
-        loss = self.criterion(y_preds, y_causes_b)
-        masked_loss = torch.sum(loss * y_mask_b)
-        loss = masked_loss / y_mask_b.sum() # only consider the outputs for actual utt emb, not paddings
+        y_mask_b = torch.tensor(y_mask_b).bool().to(self.device)
+        y_preds = y_preds.masked_select(y_mask_b)
+        y_causes_b = y_causes_b.masked_select(y_mask_b)
+
         binary_y_preds = (y_preds > self.threshold).float()
-        tp, fp, fn = self.tp_fp_fn(binary_y_preds, y_causes_b, y_mask_b)
+        loss = self.criterion(y_preds, y_causes_b)
+        loss = torch.sum(loss) / len(y_preds)
+        print("y preds")
+        print(y_preds)
+
+        tp, fp, fn = self.tp_fp_fn(binary_y_preds, y_causes_b)
         return loss.item(), tp, fp, fn
 
-    def tp_fp_fn(self, predictions, labels, mask):
-        mask = mask.to(torch.int)
+    def tp_fp_fn(self, predictions, labels):
         print("predictions batch")
         print(predictions)
-        print("mask batch")
-        print(mask)
         print("labels batch")
         print(labels)
-        mask = mask.bool()
-        predictions_flat = predictions[mask].to(torch.int)
-        labels_flat = labels[mask].to(torch.int)
 
-        tp = torch.sum(predictions_flat & labels_flat)
-        fp = torch.sum(predictions_flat & ~labels_flat)
-        fn = torch.sum(~predictions_flat & labels_flat)
+        predictions = predictions.to(torch.int)
+        labels = labels.to(torch.int)
+
+        tp = torch.sum(predictions & labels)
+        fp = torch.sum(predictions & ~labels)
+        fn = torch.sum(~predictions & labels)
 
         return tp, fp, fn
 

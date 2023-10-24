@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.nn.init as init
 from transformers import BertModel
+import numpy as np
 
 class EmbeddingModifierTransformer(nn.Module):
     def __init__(self, input_dim, hidden_dim, num_heads, num_layers):
@@ -72,9 +73,9 @@ class SingleCauseClassifier(nn.Module):
         x = self.fc1(x)
         x = self.fc2(x)
         x = self.fc3(x)
-        probabilities = torch.sigmoid(x)
-        return probabilities
-
+        # probabilities = torch.sigmoid(x)
+        # return probabilities
+        return x
 
 class GAT(nn.Module):
     """References: https://github.com/Determined22/Rank-Emotion-Cause/blob/master/src/networks/rank_cp.py"""
@@ -150,10 +151,9 @@ class GraphAttentionLayer(nn.Module):
         # attn = attn_src + attn_dst.permute(0, 1, 3, 2) # (batch, attn_heads, N, N)
         attn = F.leaky_relu(attn, 0.2, inplace=True)
 
-        # not adding mask, considering all nodes are connected
-        # adj = torch.FloatTensor(adj).to(self.device)
-        # mask = 1 - adj.unsqueeze(1)
-        # attn.data.masked_fill_(mask.byte(), -np.inf)
+        adj = torch.FloatTensor(adj).to(self.device)
+        mask = 1 - adj.unsqueeze(1)
+        attn.data.masked_fill_(mask.bool(), -np.inf)
 
         attn = F.softmax(attn, dim=-1) # dim=-1 means apply along last dim, gives attn coeff
         out_emb = torch.matmul(attn, h) + self.b # (b, attn_heads, N, out)
@@ -191,10 +191,10 @@ class EmotionCausePairClassifierModel(nn.Module):
         bert_output = self.bert_model(input_ids=bert_token_b.to(self.args.device),
                                 attention_mask=bert_masks_b.to(self.args.device),
                                 token_type_ids=bert_segment_b.to(self.args.device)
-                                      )
+                                )
         convo_utt_embeddings = self.batched_index_select(bert_output, bert_utt_b.to(self.args.device))
-        modified_embeddings = self.transformer_model(convo_utt_embeddings)
-        modified_embeddings_gat = self.gnn(modified_embeddings, convo_len, adj)
+        # modified_embeddings = self.transformer_model(convo_utt_embeddings)
+        modified_embeddings_gat = self.gnn(convo_utt_embeddings, convo_len, adj)
         # Create pair of given emotion utt with all other utt in a convo
         utt_pairs = []
         for idx, convo in enumerate(modified_embeddings_gat):
@@ -221,5 +221,6 @@ class EmotionCausePairClassifierModel(nn.Module):
         # Use gather to select specific elements from the hidden state tensor based on indices provided by bert_utt_b
         convo_utt_embeddings = hidden_state.gather(1, dummy) # convo shape = dummy shape = (bs, convo_len, hidden_dim)
         return convo_utt_embeddings
+
     # Define new function for aggregating last 4 hidden layer output for getting emb
 

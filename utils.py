@@ -64,7 +64,7 @@ def make_fold_files(args):
     file = open(file_path)
     data = json.load(file)
 
-    data_trainval, data_test = train_test_split(data, test_size=0.2, random_state=args.seed)
+    data_trainval, data_test = train_test_split(data, test_size=0.1, random_state=args.seed)
     save_file = os.path.join(save_dir, 'test.json')
     with open(save_file, 'w') as f:
         json.dump(data_test, f)
