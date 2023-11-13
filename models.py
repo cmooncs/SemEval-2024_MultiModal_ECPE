@@ -60,22 +60,6 @@ class MultipleCauseClassifier(nn.Module):
         probabilities = torch.stack(probabilities)
         return probabilities
 
-class SingleCauseClassifier(nn.Module):
-    """Gives probability for given pair whether that utt-pair has a cause"""
-    def __init__(self, input_dim, hidden_dim1, hidden_dim2):
-        super(SingleCauseClassifier, self).__init__()
-
-        self.fc1 = nn.Linear(input_dim, hidden_dim1)
-        self.fc2 = nn.Linear(hidden_dim1, hidden_dim2)
-        self.fc3 = nn.Linear(hidden_dim2, 1)
-
-    def forward(self, x):
-        x = self.fc1(x)
-        x = self.fc2(x)
-        x = self.fc3(x)
-        # probabilities = torch.sigmoid(x)
-        # return probabilities
-        return x
 
 class GAT(nn.Module):
     """References: https://github.com/Determined22/Rank-Emotion-Cause/blob/master/src/networks/rank_cp.py"""
@@ -97,7 +81,7 @@ class GAT(nn.Module):
 
     def forward(self, embeddings, convo_len, adj):
         batches, max_convo_len, _ = embeddings.size()
-        assert max(convo_len) == max_convo_len
+        assert np.max(convo_len) == max_convo_len
 
         for i, gnn_layer in enumerate(self.gnn_layers):
             embeddings = gnn_layer(embeddings, adj)
@@ -139,8 +123,10 @@ class GraphAttentionLayer(nn.Module):
         # Batched matrix multiplication, non-matrix(batch) dimensions are broadcasted
         in_emb_ = in_emb.unsqueeze(1) # (b, 1, N, in_dim)
         # (b, 1, N, in) x (attn_heads, in, out) = (b, attn_heads, N, out)
+        # project the input features to 'attn_heads' independent output features
         h = torch.matmul(in_emb_, self.W)
 
+        # instead of taking dot product bw [x,y] and a, take dp bw x and a_src and y and a_trg
         attn_src = torch.matmul(F.tanh(h), self.a_src) # (b, attn_heads, N, 1)
         attn_dst = torch.matmul(F.tanh(h), self.a_dst) # (b, attn_heads, N, 1)
         # repeat value in the last dimension N times in the 4th dimension
@@ -153,7 +139,7 @@ class GraphAttentionLayer(nn.Module):
 
         adj = torch.FloatTensor(adj).to(self.device)
         mask = 1 - adj.unsqueeze(1)
-        attn.data.masked_fill_(mask.bool(), -np.inf)
+        attn.data.masked_fill_(mask.bool(), -1e20)
 
         attn = F.softmax(attn, dim=-1) # dim=-1 means apply along last dim, gives attn coeff
         out_emb = torch.matmul(attn, h) + self.b # (b, attn_heads, N, out)
@@ -170,12 +156,29 @@ class GraphAttentionLayer(nn.Module):
 
         return out_emb
 
-class EmotionCausePairClassifierModel(nn.Module):
+class CauseEmotionClassifier(nn.Module):
+    """Gives probability for given pair whether that utt-pair has a cause"""
+    def __init__(self, input_dim, hidden_dim):
+        super(CauseEmotionClassifier, self).__init__()
+
+        self.emotion_fc1 = nn.Linear(input_dim, hidden_dim)
+        self.emotion_fc2 = nn.Linear(hidden_dim, 1)
+        self.cause_fc1 = nn.Linear(input_dim, hidden_dim)
+        self.cause_fc2 = nn.Linear(hidden_dim, 1)
+
+    def forward(self, x):
+        x1 = self.emotion_fc1(x)
+        x1 = self.emotion_fc2(x1)
+        x2 = self.cause_fc1(x)
+        x2 = self.cause_fc2(x2)
+        return x1.squeeze(2), x2.squeeze(2)
+
+class EmotionCausePairExtractorModel(nn.Module):
     def __init__(self, args):
-        super(EmotionCausePairClassifierModel, self).__init__()
+        super(EmotionCausePairExtractorModel, self).__init__()
 
         self.args = args
-        args.classifier_hidden_dim1 = 768
+        args.classifier_hidden_dim1 = 384
         args.classifier_hidden_dim2 = 384
 
         num_features_per_layer_gat = [args.num_features_per_layer_gat] * args.num_layers_gat
@@ -185,9 +188,9 @@ class EmotionCausePairClassifierModel(nn.Module):
 
         self.transformer_model = EmbeddingModifierTransformer(args.input_dim_transformer, args.hidden_dim_transformer, args.num_heads_transformer, args.num_layers_transformer)
         self.gnn = GAT(args.num_layers_gat, num_heads_per_layer_gat, num_features_per_layer_gat, args.input_dim_transformer, args.device)
-        self.classifier = SingleCauseClassifier(args.input_dim_transformer * 2, args.classifier_hidden_dim1, args.classifier_hidden_dim2)
+        self.cause_emotion_classifier = CauseEmotionClassifier(args.input_dim_transformer, args.classifier_hidden_dim1)
 
-    def forward(self, emotion_idxs, bert_token_b, bert_segment_b, bert_masks_b, bert_utt_b, convo_len, adj):
+    def forward(self, bert_token_b, bert_segment_b, bert_masks_b, bert_utt_b, convo_len, adj):
         bert_output = self.bert_model(input_ids=bert_token_b.to(self.args.device),
                                 attention_mask=bert_masks_b.to(self.args.device),
                                 token_type_ids=bert_segment_b.to(self.args.device)
@@ -195,24 +198,12 @@ class EmotionCausePairClassifierModel(nn.Module):
         convo_utt_embeddings = self.batched_index_select(bert_output, bert_utt_b.to(self.args.device))
         # modified_embeddings = self.transformer_model(convo_utt_embeddings)
         modified_embeddings_gat = self.gnn(convo_utt_embeddings, convo_len, adj)
-        # Create pair of given emotion utt with all other utt in a convo
-        utt_pairs = []
-        for idx, convo in enumerate(modified_embeddings_gat):
-            emotion_id = emotion_idxs[idx]
-            emotion_utt_emb = convo[emotion_id]
-            repeated_emotion_utt_emb = emotion_utt_emb.repeat(len(convo), 1) # along dim 1
-            pairs = torch.cat((convo, repeated_emotion_utt_emb), dim=1)
-            utt_pairs.append(pairs)
-        # Convert to torch tensor
-        utt_pairs = torch.stack(utt_pairs)
-        # .view(bs * n, input_dim) : 
-        bs = utt_pairs.shape[0]
-        n = utt_pairs.shape[1]
-        utt_pairs = utt_pairs.view(bs * n, utt_pairs.shape[2])
-        # Classify each pair as having cause or not 
-        probabilities = self.classifier(utt_pairs)
+        emotion_pred, cause_pred = self.cause_emotion_classifier(modified_embeddings_gat)
+
         # .view(bs, n)
-        return probabilities.view(bs, n)
+        bs, n, _ = modified_embeddings_gat.shape
+
+        return emotion_pred, cause_pred
 
     def batched_index_select(self, bert_output, bert_utt_b):
         # bert_output = (bs, convo_len, hidden_dim), bert_utt_b = (bs, convo_len)=idx of cls tokens

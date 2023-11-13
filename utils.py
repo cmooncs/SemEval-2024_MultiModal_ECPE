@@ -56,7 +56,7 @@ def print_time():
 
 def make_fold_files(args):
     folder = os.path.join(args.input_dir, args.text_input_dir)
-    save_dir = os.path.join(folder, "split{}".format(args.kfold))
+    save_dir = os.path.join(folder, "s2_split{}".format(args.kfold))
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
 
