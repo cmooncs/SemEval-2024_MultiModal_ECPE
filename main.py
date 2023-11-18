@@ -34,9 +34,12 @@ def parse(args):
     parser.add_argument("--batch_size", type=int, default=4, help='number of example per batch', required=False)
     parser.add_argument("--num_epochs", type=int, default=10, help='Number of epochs', required=False)
     parser.add_argument("--lr", type=float, default=0.000001, required=False)
+    parser.add_argument("--weight_decay", type=float, default=0.0001, required=False)
     parser.add_argument("--l2_reg", type=float,default=1e-5,required=False,help="l2 regularization")
     parser.add_argument("--no_cuda", action="store_true", help="sets device to CPU", required=False)
     parser.add_argument("--seed", type=int, default=42, required=False)
+    parser.add_argument("--gradient_accumulation_steps", type=int, default=2, required=False)
+    parser.add_argument("--warmup_proportion", type=float, default=0.1, required=False)
     # Task
     parser.add_argument("--task",type=int,default=1,help="Subtask 1 or 2")
     # Input directory and file names
@@ -46,7 +49,7 @@ def parse(args):
     parser.add_argument("--videos_folder",type=str,default="train", help="Folder to mp4 videos within video_inpupt_dir")
     # Embedding
     parser.add_argument("--embedding_dim",type=float,default=768,help="dimension for word embedding")
-    parser.add_argument("--embedding_dim_pos",type=float,default=50,help="dimensions for position embedding")
+    parser.add_argument("--pos_emb_dim",type=float,default=50,help="dimensions for position embedding")
     # Input structure
     parser.add_argument("--max_sen_len",type=int,default=64,help="Max number of tokens per sentence")
     parser.add_argument("--max_convo_len",type=int,default=35,help="Max number of utterances per conversation")
@@ -57,9 +60,11 @@ def parse(args):
     parser.add_argument("--causes_path",type=str,default="./data/saved/causes1.pkl",help="Path to already computed lengths of conversations. Defaults to './data/saved/causes1.pkl' for subtask 1")
     parser.add_argument("--given_emotions_path",type=str,default="./data/saved/given_emotions1.pkl",help="Path to already computed lengths of conversations. Defaults to './data/saved/given_emotions1.pkl' for subtask 1")
     # K-fold cross validation
-    parser.add_argument("--kfold",type=int,default=5,help="Value of k for k-fold cross val")
+    parser.add_argument("--kfold",type=int,default=10,help="Value of k for k-fold cross val")
     # Predictor model
-    parser.add_argument("--threshold",type=float,default=0.478,help="Threshold applied after the sigmoid for getting True (1) predictions")
+    parser.add_argument("--threshold_emo",type=float,default=0.498,help="Threshold applied after the sigmoid for getting True (1) predictions")
+    parser.add_argument("--threshold_cau",type=float,default=0.49,help="Threshold applied after the sigmoid for getting True (1) predictions")
+    parser.add_argument("--threshold_pairs",type=float,default=0.5,help="Threshold applied after the sigmoid for getting True (1) predictions for pairs")
     # GAT
     parser.add_argument("--num_layers_gat",type=int,default=4)
     parser.add_argument("--num_heads_per_layer_gat",type=int,default=4)

@@ -105,8 +105,6 @@ class CustomDataset(Dataset):
             doc_str = ''
             # y_emotions = []
             for utt in convo['conversation']:
-                # y_emotions.append(self.emotion_idx[utt['emotion']])
-
                 doc_str += '[CLS] ' + utt['text'] + ' [SEP] '
 
             indexed_tokens = self.bert_tokenizer.encode(doc_str.strip(), add_special_tokens=False)
@@ -179,9 +177,56 @@ def bert_batch_preprocessing(batch):
     assert bert_segment_b.shape == bert_token_b.shape
     assert bert_segment_b.shape == bert_masks_b.shape
 
-    return np.array(adj_b), np.array(convo_len_b), np.array(y_pairs_b), \
+    batch_size = len(y_emotions_b)
+    max_convo_len = max(convo_len_b)
+    num_pairs = max_convo_len * max_convo_len
+
+    pairs_label_b, pairs_mask_b = [], []
+
+    base_idx = np.arange(1, max_convo_len + 1)
+    # emo_pos 1,1,1,2,2,2,3,3,3
+    emo_pos = np.concatenate([base_idx.reshape(-1, 1)] * max_convo_len, axis=1).reshape(1, -1)[0]
+    # cau_pos 1,2,3,1,2,3,1,2,3
+    cau_pos = np.concatenate([base_idx] * max_convo_len, axis=0)
+    emo_cau_pos = []
+    for emo, cau in zip(emo_pos.tolist(), cau_pos.tolist()):
+        emo_cau_pos.append([emo, cau])
+
+    for i in range(batch_size):
+        max_utt_idx = convo_len_b[i]
+
+        y_pairs_i = y_pairs_b[i]
+        pairs_label_i = []
+        pairs_mask_i = []
+        for pair_idx, emo_cau in enumerate(emo_cau_pos):
+            if emo_cau[0] > max_utt_idx or emo_cau[1] > max_utt_idx:
+                pairs_mask_i.append(0)
+                pairs_label_i.append(0)
+            else:
+                pairs_mask_i.append(1)
+                pairs_label_i.append(1 if emo_cau in y_pairs_i else 0)
+
+        pairs_label_b.append(pairs_label_i)
+        pairs_mask_b.append(pairs_mask_i)
+
+    # print("y_emo_b")
+    # print(y_emotions_b)
+    # print("y_cau_b")
+    # print(y_causes_b)
+    # print("y_mask_b")
+    # print(y_mask_b)
+    # print("y_pairs_b")
+    # print(y_pairs_b)
+    # print("convo_len_b")
+    # print(convo_len_b)
+    # print("adj_b")
+    # print(adj_b)
+
+
+    return np.array(adj_b), np.array(convo_len_b), (y_pairs_b), \
         np.array(y_emotions_b), np.array(y_causes_b), np.array(y_mask_b), \
-        bert_token_b, bert_segment_b, bert_masks_b, bert_utt_b
+        bert_token_b, bert_segment_b, bert_masks_b, bert_utt_b, \
+        (pairs_label_b), (pairs_mask_b)
 
 def pad_convo(convo_len_b, y_emotions_b, y_causes_b):
     max_convo_len = max(convo_len_b)

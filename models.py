@@ -4,62 +4,62 @@ import torch.nn.functional as F
 import torch.nn.init as init
 from transformers import BertModel
 import numpy as np
+import geoopt
+import itertools
 
-class EmbeddingModifierTransformer(nn.Module):
-    def __init__(self, input_dim, hidden_dim, num_heads, num_layers):
-        super(EmbeddingModifierTransformer, self).__init__()
+# class EmbeddingModifierTransformer(nn.Module):
+#     def __init__(self, input_dim, hidden_dim, num_heads, num_layers):
+#         super(EmbeddingModifierTransformer, self).__init__()
 
-        self.self_attn = nn.MultiheadAttention(input_dim, num_heads)
+#         self.self_attn = nn.MultiheadAttention(input_dim, num_heads)
 
-        self.feedforward = nn.Sequential(
-            nn.Linear(input_dim, hidden_dim),
-            nn.ReLU(),
-            nn.Linear(hidden_dim, input_dim)
-        )
+#         self.feedforward = nn.Sequential(
+#             nn.Linear(input_dim, hidden_dim),
+#             nn.ReLU(),
+#             nn.Linear(hidden_dim, input_dim)
+#         )
 
-        self.layer_norm1 = nn.LayerNorm(input_dim)
-        self.layer_norm2 = nn.LayerNorm(input_dim)
+#         self.layer_norm1 = nn.LayerNorm(input_dim)
+#         self.layer_norm2 = nn.LayerNorm(input_dim)
 
-        self.num_layers = num_layers
+#         self.num_layers = num_layers
 
-    def forward(self, input_embeddings):
-        # Apply multiple layers of self-attention and feedforward networks
-        modified_embeddings = input_embeddings  # initialize
-        for _ in range(self.num_layers):
-            # Multi-Head Self-Attention, giving k, q, v
-            attn_output, _ = self.self_attn(modified_embeddings, modified_embeddings, modified_embeddings)
-            # Residual connection
-            modified_embeddings = self.layer_norm1(attn_output + modified_embeddings)
+#     def forward(self, input_embeddings):
+#         # Apply multiple layers of self-attention and feedforward networks
+#         modified_embeddings = input_embeddings  # initialize
+#         for _ in range(self.num_layers):
+#             # Multi-Head Self-Attention, giving k, q, v
+#             attn_output, _ = self.self_attn(modified_embeddings, modified_embeddings, modified_embeddings)
+#             # Residual connection
+#             modified_embeddings = self.layer_norm1(attn_output + modified_embeddings)
 
-            # Position-wise Feedforward Network
-            ff_output = self.feedforward(modified_embeddings)
-            # Residual connection
-            modified_embeddings = self.layer_norm2(ff_output + modified_embeddings)
+#             # Position-wise Feedforward Network
+#             ff_output = self.feedforward(modified_embeddings)
+#             # Residual connection
+#             modified_embeddings = self.layer_norm2(ff_output + modified_embeddings)
 
-        return modified_embeddings
+#         return modified_embeddings
 
-class MultipleCauseClassifier(nn.Module):
-    """Gives probability for each pair within each conversation whether that utt-pair has a cause"""
-    def __init__(self, input_dim, num_utt_tensors, num_labels):
-        super(MultipleCauseClassifier, self).__init__()
-        self.input_dim = input_dim
-        self.num_utt_tensors = num_utt_tensors
+# class MultipleCauseClassifier(nn.Module):
+#     """Gives probability for each pair within each conversation whether that utt-pair has a cause"""
+#     def __init__(self, input_dim, num_utt_tensors, num_labels):
+#         super(MultipleCauseClassifier, self).__init__()
+#         self.input_dim = input_dim
+#         self.num_utt_tensors = num_utt_tensors
 
-        # Linear layers for each tensor
-        self.linear_layers = nn.ModuleList([nn.Linear(self.input_dim, 1) for _ in range(self.num_utt_tensors)])
-        self.sigmoid = nn.Sigmoid()
+#         self.linear_layers = nn.ModuleList([nn.Linear(self.input_dim, 1) for _ in range(self.num_utt_tensors)])
+#         self.sigmoid = nn.Sigmoid()
 
-    def forward(self, x):
-        probabilities = []
-        for tensor, linear in zip(x, self.linear_layers):
-            tensor_probs = linear(tensor)
-            # The output will have shape (35, 1) change to (35)
-            tensor_probs = tensor_probs.squeeze()
-            tensor_probs = self.sigmoid(tensor_probs)
-            probabilities.append(tensor_probs)
-        probabilities = torch.stack(probabilities)
-        return probabilities
-
+#     def forward(self, x):
+#         probabilities = []
+#         for tensor, linear in zip(x, self.linear_layers):
+#             tensor_probs = linear(tensor)
+#             # The output will have shape (35, 1) change to (35)
+#             tensor_probs = tensor_probs.squeeze()
+#             tensor_probs = self.sigmoid(tensor_probs)
+#             probabilities.append(tensor_probs)
+#         probabilities = torch.stack(probabilities)
+#         return probabilities
 
 class GAT(nn.Module):
     """References: https://github.com/Determined22/Rank-Emotion-Cause/blob/master/src/networks/rank_cp.py"""
@@ -173,11 +173,158 @@ class CauseEmotionClassifier(nn.Module):
         x2 = self.cause_fc2(x2)
         return x1.squeeze(2), x2.squeeze(2)
 
+class PositionalEmbedding(nn.Module):
+    def __init__(self, max_seq_len, pos_emb_dim):
+        super(PositionalEmbedding, self).__init__()
+        self.pos_embedding = nn.Embedding(max_seq_len, pos_emb_dim)
+
+    def forward(self, positions):
+        """
+        Input: (batch_size, seq_len) = positions in the sequence
+        Output: (batch_size, seq_len, pos_emb_dim) = position embeddings
+        """
+        embeddings = self.pos_embedding(positions)
+        return embeddings
+
+class HyperbolicLinearLayer(nn.Module):
+    def __init__(self, input_dim, output_dim, manifold):
+        super(HyperbolicLinearLayer, self).__init__()
+
+        self.W = nn.Parameter(torch.Tensor(output_dim, input_dim))
+        self.bias = nn.Parameter(torch.Tensor(output_dim))
+
+        nn.init.kaiming_uniform_(self.W.data)
+        nn.init.zeros_(self.bias.data)
+        self.manifold = manifold
+
+    def forward(self, x):
+        hyperbolic_output = self.manifold.mobius_matvec(self.W, x) + self.bias.unsqueeze(0)
+        return hyperbolic_output
+
+class HyperbolicClassifier(nn.Module):
+    def __init__(self, input_dim, hidden_dim, output_dim):
+        super(HyperbolicClassifier, self).__init__()
+
+        self.ball = geoopt.PoincareBall()
+
+        self.fc1 = HyperbolicLinearLayer(input_dim, hidden_dim, self.ball)
+        self.fc2 = HyperbolicLinearLayer(hidden_dim, output_dim, self.ball)
+        self.activation = nn.ReLU()
+
+    def forward(self, x):
+        x = self.activation(self.fc1(x))
+        x = self.fc2(x)
+
+        return x
+
+class BiLSTMClassifier(nn.Module):
+    def __init__(self, input_dim, hidden_dim, num_layers, device):
+        super(BiLSTMClassifier, self).__init__()
+        self.hidden_dim = hidden_dim
+        self.num_layers = num_layers
+        self.lstm = nn.LSTM(input_dim, hidden_dim, num_layers, batch_first=True, bidirectional=True)
+        self.fc = nn.Linear(hidden_dim * 2, 1)
+        self.device = device
+
+    def forward(self, x):
+        h0 = torch.zeros(self.num_layers * 2, x.size(0), self.hidden_dim).to(self.device)
+        c0 = torch.zeros(self.num_layers * 2, x.size(0), self.hidden_dim).to(self.device)
+        out, state = self.lstm(x, (h0, c0))
+        # print("out shape {}".format(out.shape))
+        out_last_tstep = out[:, -1, :]
+        logits = self.fc(out_last_tstep)
+
+        return logits
+
+class PairsClassifier(nn.Module):
+    def __init__(self, args):
+        super(PairsClassifier, self).__init__()
+        self.max_seq_len = args.max_convo_len
+        # self.pos_emb_dim = args.pos_emb_dim
+        self.input_emb_dim = args.input_dim_transformer
+        # self.concat_emb_dim = 2 * self.input_emb_dim + self.pos_emb_dim
+        self.concat_emb_dim = 2 * self.input_emb_dim
+        self.device = args.device
+
+        # self.pos_emb_layer = nn.Embedding(2*self.max_seq_len + 1, self.pos_emb_dim)
+        # nn.init.xavier_uniform_(self.pos_emb_layer.weight)
+        self.bilstm = BiLSTMClassifier(self.concat_emb_dim, self.concat_emb_dim // 2, 2, self.device)
+        # self.hyperbolic_classifier = HyperbolicClassifier(self.concat_emb_dim, self.concat_emb_dim // 2, 1)
+
+    def forward(self, input_embeddings, indices_pred_e, indices_pred_c):
+        pairs, pairs_pos, batch_idxs_b = self.couple_generator(input_embeddings, indices_pred_e, indices_pred_c)
+
+        pairs_pred = self.bilstm(pairs)
+        return pairs_pred, pairs_pos, batch_idxs_b
+
+        # couples = self.euclidean_to_hyperbolic(couples)
+        # couples_pred = self.hyperbolic_classifier(couples)
+        # return couples_pred.squeeze(2), emo_cau_pos
+
+    def euclidean_to_hyperbolic(self, embeddings, scale=0.01):
+        ball = geoopt.PoincareBall()
+        embeddings = torch.nn.functional.normalize(embeddings, p=2, dim=-1)
+        hyperbolic_embeddings = ball.expmap0(scale * embeddings)
+
+        return hyperbolic_embeddings
+
+    def couple_generator(self, in_emb, indices_pred_e, indices_pred_c):
+        bs, seq_len, in_dim = in_emb.size()
+        p_left = torch.cat([in_emb] * seq_len, dim=2)
+        p_left = p_left.reshape(-1, seq_len * seq_len, in_dim)
+        p_right = torch.cat([in_emb] * seq_len, dim=1)
+        p = torch.cat([p_left, p_right], dim=2)
+        p = p.view(bs, seq_len, seq_len, 2 * in_dim)
+
+        pairs_b = []
+        pairs_pos_b = []
+        batch_idxs_b = []
+        for batch_idx in range(len(indices_pred_e)):
+            row1 = indices_pred_e[batch_idx]
+            row2 = indices_pred_c[batch_idx]
+            pos = list(itertools.product(row1, row2))
+            # pos = [(x, y) for x in row1 for y in row2]
+            if self.device == 'cpu':
+                prs = [p[batch_idx][index].detach().numpy() for index in pos]
+            else:
+                prs = [p[batch_idx][index].detach().cpu().numpy() for index in pos]
+            batch_idxs = [batch_idx] * len(prs)
+            pairs_pos_b.extend(pos)
+            pairs_b.extend(prs)
+            batch_idxs_b.extend(batch_idxs)
+
+        pairs_b = torch.as_tensor(pairs_b).to(self.device)
+        pairs_pos_b = torch.as_tensor(pairs_pos_b).to(self.device)
+        batch_b = torch.as_tensor(batch_idxs_b).to(self.device)
+        return pairs_b, pairs_pos_b, batch_idxs_b
+
+        # if seq_len > self.max_seq_len:
+        #     rel_mask = np.array(list(map(lambda x: -self.max_seq_len <= x <= self.max_seq_len, rel_pos.tolist())), dtype=int)
+        #     rel_mask = torch.BoolTensor(rel_mask).to(self.device)
+        #     rel_pos = rel_pos.masked_select(rel_mask)
+        #     emo_pos = emo_pos.masked_select(rel_mask)
+        #     cau_pos = cau_pos.masked_select(rel_mask)
+
+        #     rel_mask = rel_mask.unsqueeze(1).expand(-1, 2 * in_dim)
+        #     rel_mask = rel_mask.unsqueeze(0).expand(bs, -1, -1)
+        #     p = p.masked_select(rel_mask)
+        #     p = p.reshape(bs, -1, 2 * in_dim)
+
+        # assert rel_pos.size(0) == p.size(1)
+        # rel_pos = rel_pos.unsqueeze(0).expand(bs, -1)
+
+        # emo_cau_pos = []
+        # for emo, cau in zip(emo_pos.tolist(), cau_pos.tolist()):
+        #     emo_cau_pos.append([emo, cau])
+        # return p, rel_pos, emo_cau_pos
+
 class EmotionCausePairExtractorModel(nn.Module):
     def __init__(self, args):
         super(EmotionCausePairExtractorModel, self).__init__()
 
         self.args = args
+        self.threshold_emo = args.threshold_emo
+        self.threshold_cau = args.threshold_cau
         args.classifier_hidden_dim1 = 384
         args.classifier_hidden_dim2 = 384
 
@@ -186,11 +333,13 @@ class EmotionCausePairExtractorModel(nn.Module):
 
         self.bert_model = BertModel.from_pretrained('bert-base-uncased')
 
-        self.transformer_model = EmbeddingModifierTransformer(args.input_dim_transformer, args.hidden_dim_transformer, args.num_heads_transformer, args.num_layers_transformer)
+        # self.transformer_model = EmbeddingModifierTransformer(args.input_dim_transformer, args.hidden_dim_transformer, args.num_heads_transformer, args.num_layers_transformer)
         self.gnn = GAT(args.num_layers_gat, num_heads_per_layer_gat, num_features_per_layer_gat, args.input_dim_transformer, args.device)
         self.cause_emotion_classifier = CauseEmotionClassifier(args.input_dim_transformer, args.classifier_hidden_dim1)
+        self.pairs_classifier = PairsClassifier(args)
+        self.pos_emb_layer = PositionalEmbedding(args.max_convo_len, args.pos_emb_dim)
 
-    def forward(self, bert_token_b, bert_segment_b, bert_masks_b, bert_utt_b, convo_len, adj):
+    def forward(self, bert_token_b, bert_segment_b, bert_masks_b, bert_utt_b, convo_len, adj, y_mask_b):
         bert_output = self.bert_model(input_ids=bert_token_b.to(self.args.device),
                                 attention_mask=bert_masks_b.to(self.args.device),
                                 token_type_ids=bert_segment_b.to(self.args.device)
@@ -200,10 +349,25 @@ class EmotionCausePairExtractorModel(nn.Module):
         modified_embeddings_gat = self.gnn(convo_utt_embeddings, convo_len, adj)
         emotion_pred, cause_pred = self.cause_emotion_classifier(modified_embeddings_gat)
 
-        # .view(bs, n)
-        bs, n, _ = modified_embeddings_gat.shape
+        y_mask_b = torch.tensor(y_mask_b).bool().to(self.args.device)
+        # convert the output to binary
+        binary_preds_e = (torch.sigmoid(emotion_pred) > self.threshold_emo).float()
+        indices_pred_e = []
+        print(binary_preds_e)
+        binary_preds_c = (torch.sigmoid(cause_pred) > self.threshold_cau).float()
+        indices_pred_c = []
+        print(binary_preds_c)
+        for idx, preds in enumerate(binary_preds_e):
+            preds = preds.masked_select(y_mask_b[idx])
+            indices = torch.nonzero(preds == 1.)
+            indices_pred_e.append(indices)
+        for idx, preds in enumerate(binary_preds_c):
+            preds = preds.masked_select(y_mask_b[idx])
+            indices = torch.nonzero(preds == 1.)
+            indices_pred_c.append(indices)
 
-        return emotion_pred, cause_pred
+        pair_pred, pairs_pos, batch_idxs_b = self.pairs_classifier(modified_embeddings_gat, indices_pred_e, indices_pred_c)
+        return emotion_pred, cause_pred, pair_pred, pairs_pos, batch_idxs_b
 
     def batched_index_select(self, bert_output, bert_utt_b):
         # bert_output = (bs, convo_len, hidden_dim), bert_utt_b = (bs, convo_len)=idx of cls tokens
