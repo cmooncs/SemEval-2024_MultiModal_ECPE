@@ -20,7 +20,6 @@ def parse(args):
 
     parser.add_argument("--train", action="store_false", help='whether to perform training or not', required=False)
     parser.add_argument("--test", action="store_false", help='whether to perform testing or not', required=False)
-    parser.add_argument('--choose_emocate', default='',help="whether to predict emotion category")
     # custom transformer model structure
     parser.add_argument('--input_dim_transformer', default=768, help='input dimension for EmbeddingModifierTransformer')
     parser.add_argument('--hidden_dim_transformer', default=256, help='hidden dimension for EmbeddingModifierTransformer')
@@ -33,7 +32,7 @@ def parse(args):
     # training args
     parser.add_argument("--batch_size", type=int, default=4, help='number of example per batch', required=False)
     parser.add_argument("--num_epochs", type=int, default=10, help='Number of epochs', required=False)
-    parser.add_argument("--lr", type=float, default=0.000001, required=False)
+    parser.add_argument("--lr", type=float, default=0.001, required=False)
     parser.add_argument("--weight_decay", type=float, default=0.0001, required=False)
     parser.add_argument("--l2_reg", type=float,default=1e-5,required=False,help="l2 regularization")
     parser.add_argument("--no_cuda", action="store_true", help="sets device to CPU", required=False)
@@ -52,7 +51,7 @@ def parse(args):
     parser.add_argument("--pos_emb_dim",type=float,default=50,help="dimensions for position embedding")
     # Input structure
     parser.add_argument("--max_sen_len",type=int,default=64,help="Max number of tokens per sentence")
-    parser.add_argument("--max_convo_len",type=int,default=35,help="Max number of utterances per conversation")
+    parser.add_argument("--max_convo_len",type=int,default=64,help="Max number of utterances per conversation")
     # Paths for saving computed values
     parser.add_argument("--embedding_path",type=str,default="./data/saved/embeddings1.pkl",help="Path to already computed embeddings. Defaults to './data/saved/embeddings1.pkl' for subtask 1")
     parser.add_argument("--labels_path",type=str,default="./data/saved/labels1.pkl",help="Path to already computed emotion labels. Defaults to './data/saved/labels1.pkl' for subtask 1")
@@ -62,11 +61,11 @@ def parse(args):
     # K-fold cross validation
     parser.add_argument("--kfold",type=int,default=10,help="Value of k for k-fold cross val")
     # Predictor model
-    parser.add_argument("--threshold_emo",type=float,default=0.498,help="Threshold applied after the sigmoid for getting True (1) predictions")
-    parser.add_argument("--threshold_cau",type=float,default=0.49,help="Threshold applied after the sigmoid for getting True (1) predictions")
-    parser.add_argument("--threshold_pairs",type=float,default=0.5,help="Threshold applied after the sigmoid for getting True (1) predictions for pairs")
+    parser.add_argument("--threshold_emo",type=float,default=0.5045,help="Threshold applied after the sigmoid for getting True (1) predictions")
+    parser.add_argument("--threshold_cau",type=float,default=0.4862,help="Threshold applied after the sigmoid for getting True (1) predictions")
+    parser.add_argument("--threshold_pairs",type=float,default=0.5001,help="Threshold applied after the sigmoid for getting True (1) predictions for pairs")
     # GAT
-    parser.add_argument("--num_layers_gat",type=int,default=4)
+    parser.add_argument("--num_layers_gat",type=int,default=2)
     parser.add_argument("--num_heads_per_layer_gat",type=int,default=4)
     parser.add_argument("--num_features_per_layer_gat",type=int,default=192)
 

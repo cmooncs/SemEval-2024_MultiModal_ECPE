@@ -70,12 +70,11 @@ class Wrapper():
             best_val_f1_e = None
             best_val_f1_p = None
 
-
             # Model, loss fn and optimizer
             self.model = EmotionCausePairExtractorModel(args)
             self.model.to(self.device)
             self.criterion = nn.BCEWithLogitsLoss(reduction='mean') # apply reduction = 'none'?
-            self.optimizer = optim.Adam(self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay)
+            self.optimizer = optim.AdamW(self.model.parameters(), lr=self.lr, weight_decay=self.weight_decay)
             self.num_update_steps = len(self.train_loader) // self.gradient_accumulation_steps * self.num_epochs
             self.warmup_steps = self.warmup_proportion * self.num_update_steps
             scheduler = get_linear_schedule_with_warmup(self.optimizer, num_warmup_steps=self.warmup_steps, num_training_steps=self.num_update_steps)
@@ -197,23 +196,26 @@ class Wrapper():
 
     def update(self, step, bert_token_b, bert_segment_b, bert_masks_b, bert_utt_b, convo_len_b, adj_b, y_emotions_b, y_causes_b, y_mask_b, y_pairs_b, pairs_labels_b, pairs_mask_b):
         self.model.train()
-        y_preds_e, y_preds_c, y_preds_p, pairs_pos, batch_idxs = self.model(bert_token_b, bert_segment_b, bert_masks_b, bert_utt_b, convo_len_b, adj_b, y_mask_b)
+        y_preds_e, y_preds_c, y_preds_p = self.model(bert_token_b, bert_segment_b, bert_masks_b, bert_utt_b, convo_len_b, adj_b, y_mask_b)
         y_causes_b = torch.tensor(y_causes_b, dtype=torch.float32).to(self.device)
         y_emotions_b = torch.tensor(y_emotions_b, dtype=torch.float32).to(self.device)
         pairs_labels_b = torch.tensor(pairs_labels_b, dtype=torch.float32).to(self.device)
+
         y_mask_b = torch.tensor(y_mask_b).bool().to(self.device)
         pairs_mask_b = torch.tensor(pairs_mask_b).bool().to(self.device)
 
-        preds_p = torch.zeros(pairs_mask_b.shape).to(self.device)
-        for (i, j), pred, bi in zip(pairs_pos, y_preds_p, batch_idxs):
-            preds_p[bi][i * len(y_emotions_b[0]) + j] = pred
+        # using emo cau prediction
+        # preds_p = torch.zeros(pairs_mask_b.shape).to(self.device)
+        # for (i, j), pred, bi in zip(pairs_pos, y_preds_p, batch_idxs):
+        #     preds_p[bi][i * len(y_emotions_b[0]) + j] = pred
 
         # print("pair labels b {}".format(pairs_labels_b.shape))
         # print("pair preds b {}".format(y_preds_p.shape))
 
+        # using all pairs (rankcp)
         preds_e = y_preds_e.masked_select(y_mask_b) # masked_select converts into 1d tensor
         preds_c = y_preds_c.masked_select(y_mask_b)
-        preds_p = preds_p.masked_select(pairs_mask_b)
+        preds_p = y_preds_p.masked_select(pairs_mask_b)
 
         y_causes_b = y_causes_b.masked_select(y_mask_b)
         y_emotions_b = y_emotions_b.masked_select(y_mask_b)
@@ -293,32 +295,33 @@ class Wrapper():
 
     def update_val(self, bert_token_b, bert_segment_b, bert_masks_b, bert_utt_b, convo_len_b, adj_b, y_emotions_b, y_causes_b, y_mask_b, y_pairs_b, pairs_labels_b, pairs_mask_b):
         self.model.eval()
-        y_preds_e, y_preds_c, y_preds_p, pairs_pos, batch_idxs = self.model(bert_token_b, bert_segment_b, bert_masks_b, bert_utt_b, convo_len_b, adj_b, y_mask_b)
+        y_preds_e, y_preds_c, y_preds_p = self.model(bert_token_b, bert_segment_b, bert_masks_b, bert_utt_b, convo_len_b, adj_b, y_mask_b)
         y_causes_b = torch.tensor(y_causes_b, dtype=torch.float32).to(self.device)
         y_emotions_b = torch.tensor(y_emotions_b, dtype=torch.float32).to(self.device)
         pairs_labels_b = torch.tensor(pairs_labels_b, dtype=torch.float32).to(self.device)
+
         y_mask_b = torch.tensor(y_mask_b).bool().to(self.device)
         pairs_mask_b = torch.tensor(pairs_mask_b).bool().to(self.device)
 
-        preds_p = torch.zeros(pairs_mask_b.shape).to(self.device)
-        for (i, j), pred, bi in zip(pairs_pos, y_preds_p, batch_idxs):
-            preds_p[bi][i * len(y_emotions_b[0]) + j] = pred
+        # preds_p = torch.zeros(pairs_mask_b.shape).to(self.device)
+        # for (i, j), pred, bi in zip(pairs_pos, y_preds_p, batch_idxs):
+        #     preds_p[bi][i * len(y_emotions_b[0]) + j] = pred
 
-        y_preds_e = y_preds_e.masked_select(y_mask_b)
-        y_preds_c = y_preds_c.masked_select(y_mask_b)
+        preds_e = y_preds_e.masked_select(y_mask_b)
+        preds_c = y_preds_c.masked_select(y_mask_b)
+        preds_p = y_preds_p.masked_select(pairs_mask_b)
+
         y_causes_b = y_causes_b.masked_select(y_mask_b)
         y_emotions_b = y_emotions_b.masked_select(y_mask_b)
-        preds_p = preds_p.masked_select(pairs_mask_b)
         pairs_labels_b = pairs_labels_b.masked_select(pairs_mask_b)
 
-        binary_y_preds_e = (torch.sigmoid(y_preds_e) > self.threshold_emo).float()
-        binary_y_preds_c = (torch.sigmoid(y_preds_c) > self.threshold_cau).float()
+        binary_y_preds_e = (torch.sigmoid(preds_e) > self.threshold_emo).float()
+        binary_y_preds_c = (torch.sigmoid(preds_c) > self.threshold_cau).float()
         binary_y_preds_p = (torch.sigmoid(preds_p) > self.threshold_pairs).float()
 
         loss_p = self.pair_criterion(preds_p, pairs_labels_b)
-        loss_e = self.criterion(y_preds_e, y_emotions_b)
-        loss_c = self.criterion(y_preds_c, y_causes_b)
-        # loss = loss_e + loss_c + loss_p
+        loss_e = self.criterion(preds_e, y_emotions_b)
+        loss_c = self.criterion(preds_c, y_causes_b)
         loss = loss_e + loss_c + loss_p
 
         tp, fp, fn = self.tp_fp_fn(binary_y_preds_e, binary_y_preds_c, binary_y_preds_p, y_emotions_b, y_causes_b, pairs_labels_b)

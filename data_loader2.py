@@ -95,7 +95,7 @@ class CustomDataset(Dataset):
             y_emotions = np.zeros(convo_len)
             y_prs = []
             for pair in convo["emotion-cause_pairs"]:
-                emo_id = int(pair[0].strip('_')[0]) - 1
+                emo_id = int(pair[0].split('_')[0]) - 1
                 cause_id = int(pair[1]) - 1
                 y_causes[cause_id] = 1.
                 y_emotions[emo_id] = 1.
@@ -183,10 +183,10 @@ def bert_batch_preprocessing(batch):
 
     pairs_label_b, pairs_mask_b = [], []
 
-    base_idx = np.arange(1, max_convo_len + 1)
-    # emo_pos 1,1,1,2,2,2,3,3,3
+    base_idx = np.arange(0, max_convo_len)
+    # emo_pos 0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3
     emo_pos = np.concatenate([base_idx.reshape(-1, 1)] * max_convo_len, axis=1).reshape(1, -1)[0]
-    # cau_pos 1,2,3,1,2,3,1,2,3
+    # cau_pos 0,1,2,3,0,1,2,3,0,1,2,3,0,1,2,3
     cau_pos = np.concatenate([base_idx] * max_convo_len, axis=0)
     emo_cau_pos = []
     for emo, cau in zip(emo_pos.tolist(), cau_pos.tolist()):
