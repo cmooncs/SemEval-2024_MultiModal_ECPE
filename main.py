@@ -32,7 +32,7 @@ def parse(args):
     # training args
     parser.add_argument("--batch_size", type=int, default=4, help='number of example per batch', required=False)
     parser.add_argument("--num_epochs", type=int, default=10, help='Number of epochs', required=False)
-    parser.add_argument("--lr", type=float, default=0.001, required=False)
+    parser.add_argument("--lr", type=float, default=0.00001, required=False)
     parser.add_argument("--weight_decay", type=float, default=0.0001, required=False)
     parser.add_argument("--l2_reg", type=float,default=1e-5,required=False,help="l2 regularization")
     parser.add_argument("--no_cuda", action="store_true", help="sets device to CPU", required=False)

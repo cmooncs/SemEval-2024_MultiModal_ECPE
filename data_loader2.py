@@ -221,6 +221,8 @@ def bert_batch_preprocessing(batch):
     # print(convo_len_b)
     # print("adj_b")
     # print(adj_b)
+    print(pairs_label_b[0])
+    print(pairs_mask_b[0])
 
 
     return np.array(adj_b), np.array(convo_len_b), (y_pairs_b), \

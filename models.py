@@ -237,6 +237,17 @@ class BiLSTMClassifier(nn.Module):
 
         return logits
 
+class LinearClassifier(nn.Module):
+    def __init__(self, input_dim, hidden_dim, device):
+        super(LinearClassifier, self).__init__()
+
+        self.fc1 = nn.Linear(input_dim, hidden_dim)
+        self.fc2 = nn.Linear(hidden_dim, 1)
+    def forward(self, x):
+        x = nn.ReLU(self.fc1(x))
+        x = self.fc2(x)
+        return x
+
 class PairsClassifier(nn.Module):
     def __init__(self, args):
         super(PairsClassifier, self).__init__()
@@ -249,12 +260,14 @@ class PairsClassifier(nn.Module):
         self.pos_emb_layer = nn.Embedding(self.max_seq_len, self.pos_emb_dim)
         nn.init.xavier_uniform_(self.pos_emb_layer.weight)
         self.bilstm = BiLSTMClassifier(self.concat_emb_dim, self.concat_emb_dim // 2, 2, self.device)
+        self.linear_classifier = LinearClassifier(self.concat_emb_dim, self.concat_emb_dim // 2, self.device)
         # self.hyperbolic_classifier = HyperbolicClassifier(self.concat_emb_dim, self.concat_emb_dim // 2, 1)
 
     def forward(self, input_embeddings, convo_len):
         pairs = self.couple_generator(input_embeddings, convo_len)
 
-        pairs_pred = self.bilstm(pairs)
+        # pairs_pred = self.bilstm(pairs)
+        pairs_pred = self.linear_classifier(pairs)
         # print("pairs pred shape {}".format(pairs_pred.shape))
         return pairs_pred.view(self.bs, self.seq_len * self.seq_len)
 
