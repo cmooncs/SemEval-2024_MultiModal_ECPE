@@ -32,15 +32,13 @@ def parse(args):
     # training args
     parser.add_argument("--batch_size", type=int, default=4, help='number of example per batch', required=False)
     parser.add_argument("--num_epochs", type=int, default=10, help='Number of epochs', required=False)
-    parser.add_argument("--lr", type=float, default=0.00001, required=False)
-    parser.add_argument("--weight_decay", type=float, default=0.0001, required=False)
+    parser.add_argument("--lr", type=float, default=0.000001, required=False)
+    parser.add_argument("--weight_decay", type=float, default=0.00001, required=False)
     parser.add_argument("--l2_reg", type=float,default=1e-5,required=False,help="l2 regularization")
     parser.add_argument("--no_cuda", action="store_true", help="sets device to CPU", required=False)
     parser.add_argument("--seed", type=int, default=42, required=False)
     parser.add_argument("--gradient_accumulation_steps", type=int, default=2, required=False)
     parser.add_argument("--warmup_proportion", type=float, default=0.1, required=False)
-    # Task
-    parser.add_argument("--task",type=int,default=1,help="Subtask 1 or 2")
     # Input directory and file names
     parser.add_argument("--text_input_dir",type=str,default="text",help="Path to text input files within input_dir")
     parser.add_argument("--video_input_dir",type=str,default="video",help="Path to video input folders within input_dir")
@@ -66,7 +64,7 @@ def parse(args):
     parser.add_argument("--threshold_pairs",type=float,default=0.5001,help="Threshold applied after the sigmoid for getting True (1) predictions for pairs")
     parser.add_argument("--threshold",type=float,default=0.5,help="Threshold applied after the sigmoid for getting True (1) predictions for pairs")
     # GAT
-    parser.add_argument("--num_layers_gat",type=int,default=2)
+    parser.add_argument("--num_layers_gat",type=int,default=4)
     parser.add_argument("--num_heads_per_layer_gat",type=int,default=4)
     parser.add_argument("--num_features_per_layer_gat",type=int,default=192)
 
@@ -99,29 +97,15 @@ def main():
         make_fold_files(args)
 
     model_wrapper = Wrapper(args)
-    cause_aprfb, emotion_aprfb, pair_aprfb = model_wrapper.run(args)
+    emotion_aprfb = model_wrapper.run(args)
 
     print("\n\n>>>>>>>>>>Final results across all folds<<<<<<<<<<<<<<")
-    print("Cause Prediction")
-    print("Accuracy: {:.4f}".format(np.mean(cause_aprfb['acc'])))
-    print("Precision: {:.4f}".format(np.mean(cause_aprfb['p'])))
-    print("Recall: {:.4f}".format(np.mean(cause_aprfb['r'])))
-    print("F1: {:.4f}".format(np.mean(cause_aprfb['f1'])))
-    print("Best F1: {:.4f}".format(np.mean(cause_aprfb['bf1'])))
-
     print("Emotion Prediction")
     print("Accuracy: {:.4f}".format(np.mean(emotion_aprfb['acc'])))
     print("Precision: {:.4f}".format(np.mean(emotion_aprfb['p'])))
     print("Recall: {:.4f}".format(np.mean(emotion_aprfb['r'])))
     print("F1: {:.4f}".format(np.mean(emotion_aprfb['f1'])))
     print("Best F1: {:.4f}".format(np.mean(emotion_aprfb['bf1'])))
-
-    print("Emotion-Cause Pair Prediction")
-    print("Accuracy: {:.4f}".format(np.mean(cause_aprfb['acc'])))
-    print("Precision: {:.4f}".format(np.mean(cause_aprfb['p'])))
-    print("Recall: {:.4f}".format(np.mean(cause_aprfb['r'])))
-    print("F1: {:.4f}".format(np.mean(cause_aprfb['f1'])))
-    print("Best F1: {:.4f}".format(np.mean(cause_aprfb['bf1'])))
 
     wandb.finish()
 

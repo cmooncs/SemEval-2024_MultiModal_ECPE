@@ -241,11 +241,11 @@ class LinearClassifier(nn.Module):
     def __init__(self, input_dim, hidden_dim, device):
         super(LinearClassifier, self).__init__()
 
-        self.fc1 = nn.Linear(input_dim, hidden_dim)
-        self.fc2 = nn.Linear(hidden_dim, 1)
+        self.fc1 = nn.Linear(input_dim, 1)
+        # self.fc2 = nn.Linear(hidden_dim, 1)
     def forward(self, x):
-        x = nn.ReLU(self.fc1(x))
-        x = self.fc2(x)
+        # x = nn.ReLU(self.fc1(x))
+        x = self.fc1(x)
         return x
 
 class PairsClassifier(nn.Module):
@@ -285,7 +285,8 @@ class PairsClassifier(nn.Module):
     def couple_generator(self, in_emb, convo_len):
         bs, seq_len, in_dim = in_emb.size()
         # create positional embeddings (need to add a check for max_seq_len)
-        seq_lengths = torch.norm(in_emb, dim=-1).int().to(self.device) # shape (bs, seq_lens)
+        seq_lengths = torch.as_tensor([[seq_len] * len(in_emb[0])] * bs).to(self.device)
+        # print("seq lengths {}".format(seq_lengths))
         # print("seq lengths dim {}".format(seq_lengths.shape))
         pos_embeddings = self.pos_emb_layer(seq_lengths)
         # print("pos emb dim {}".format(pos_embeddings.shape))
@@ -362,7 +363,6 @@ class EmotionCausePairExtractorModel(nn.Module):
         self.gnn = GAT(args.num_layers_gat, num_heads_per_layer_gat, num_features_per_layer_gat, args.input_dim_transformer, args.device)
         self.cause_emotion_classifier = CauseEmotionClassifier(args.input_dim_transformer, args.classifier_hidden_dim1)
         self.pairs_classifier = PairsClassifier(args)
-        self.pos_emb_layer = PositionalEmbedding(args.max_convo_len, args.pos_emb_dim)
 
     def forward(self, bert_token_b, bert_segment_b, bert_masks_b, bert_utt_b, convo_len, adj, y_mask_b):
         bert_output = self.bert_model(input_ids=bert_token_b.to(self.args.device),

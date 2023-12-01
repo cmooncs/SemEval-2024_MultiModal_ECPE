@@ -11,6 +11,9 @@ import random
 import wandb
 from sklearn.metrics import roc_curve
 from sklearn.metrics import roc_auc_score
+from sklearn.metrics import precision_recall_curve
+from sklearn.metrics import auc
+# from sklearn import metrics
 import matplotlib.pyplot as plt
 
 from models import EmotionCausePairExtractorModel
@@ -30,11 +33,9 @@ class Wrapper():
         self.batch_size = args.batch_size
         self.threshold_emo = args.threshold_emo
         self.threshold_cau = args.threshold_cau
-        self.model = None
-        self.criterion = None
-        self.optimizer = None
         self.threshold_pairs = args.threshold_pairs
         self.warmup_proportion = args.warmup_proportion
+        self.threshold = args.threshold
 
     def run(self, args):
         cause_aprfb = {'acc': [], 'p': [], 'r': [], 'f': [], 'b': []}
@@ -50,6 +51,7 @@ class Wrapper():
                 "threshold_emo":args.threshold_emo,
                 "threshold_cau":args.threshold_cau,
                 "threshold_pairs":args.threshold_pairs,
+                "threshold":args.threshold,
                 "max_convo_len":args.max_convo_len,
                 },
                 entity='arefa2001',
@@ -81,6 +83,7 @@ class Wrapper():
             self.num_update_steps = len(self.train_loader) // self.gradient_accumulation_steps * self.num_epochs
             self.warmup_steps = self.warmup_proportion * self.num_update_steps
             scheduler = get_linear_schedule_with_warmup(self.optimizer, num_warmup_steps=self.warmup_steps, num_training_steps=self.num_update_steps)
+            self.model.zero_grad()
 
             # Training and Validation loop
             for epoch in range(self.num_epochs):
@@ -134,6 +137,37 @@ class Wrapper():
                 plt.legend(loc="lower right")
                 plt.show()
 
+                e_precision, e_recall, the = precision_recall_curve(true_e, y_preds_e)
+                c_precision, c_recall, thc = precision_recall_curve(true_c, y_preds_c)
+                p_precision, p_recall, thp = precision_recall_curve(true_p, y_preds_p)
+                e_auprc = auc(e_recall, e_precision)
+                c_auprc =  auc(c_recall, c_precision)
+                p_auprc = auc(p_recall, p_precision)
+                print("AUPRC Emotion: {}".format(e_auprc))
+                print("AUPRC Cause: {}".format(c_auprc))
+                print("AUPRC Pair: {}".format(p_auprc))
+                f_true_e = np.sum(np.array(true_e)) / (np.array(true_e)).size
+                f_true_c = np.sum(np.array(true_c)) / (np.array(true_c)).size
+                f_true_p = np.sum(np.array(true_p)) / (np.array(true_p)).size
+                fig, (ax1, ax2, ax3) = plt.subplots(3, 1)
+                fig.suptitle("Precision-Recall curve")
+
+                ax1.plot([0,1], [f_true_e, f_true_e], linestyle="--", label="")
+                ax1.plot(e_recall, e_precision, marker='.', label="")
+                ax1.set_ylabel("Precision")
+                ax1.set_xlabel("Recall")
+                ax2.plot([0,1], [f_true_c, f_true_c], linestyle="--", label="")
+                ax2.plot(c_recall, c_precision, marker='.', label="")
+                ax2.set_ylabel("Precision")
+                ax2.set_xlabel("Recall")
+                ax3.plot([0,1], [f_true_p, f_true_p], linestyle="--", label="")
+                ax3.plot(p_recall, p_precision, marker='.', label="")
+                ax3.set_ylabel("Precision")
+                ax3.set_xlabel("Recall")
+                plt.legend()
+                plt.show()
+
+                wandb.log({"auprc_e": e_auprc, "c_auprc": c_auprc, "p_auprc": p_auprc})
 
                 print(f"Epoch {epoch + 1}/{self.num_epochs}, Avg Val Loss: {val_epoch_loss:.4f}\nCause: Val Accuracy: {val_accuracy_c:.4f}, Val Precision: {val_precision_c:.4f}, Val Recall: {val_recall_c:.4f}, Val F1: {val_f1_c:.4f}\nEmotion: Val Accuracy: {val_accuracy_e:.4f} Val Precision: {val_precision_e:.4f}, Val Recall: {val_recall_e:.4f}, Val F1: {val_f1_e:.4f}\nPair: Val Accuracy: {val_accuracy_p:.4f}, Val Precision: {val_precision_p:.4f}, Val Recall: {val_recall_p:.4f}, Val F1: {val_f1_p:.4f}")
                 val_losses.append(val_epoch_loss)
@@ -206,7 +240,7 @@ class Wrapper():
                     bert_token_b, bert_segment_b, bert_masks_b, bert_utt_b, \
                     pairs_labels_b, pairs_mask_b = batch
 
-                batch_loss, correct_e, correct_c, correct_p, y_emotions_b_masked, pairs_labels_b_masked= self.update(step, bert_token_b, bert_segment_b, bert_masks_b, bert_utt_b, convo_len_b, adj_b, y_emotions_b, y_causes_b, y_mask_b, y_pairs_b, pairs_labels_b, pairs_mask_b)
+                batch_loss, correct_e, correct_c, correct_p, y_emotions_b_masked, pairs_labels_b_masked = self.update(step, bert_token_b, bert_segment_b, bert_masks_b, bert_utt_b, convo_len_b, adj_b, y_emotions_b, y_causes_b, y_mask_b, y_pairs_b, pairs_labels_b, pairs_mask_b)
                 samples = len(y_emotions_b_masked)
                 samples_pairs = len(pairs_labels_b_masked)
                 total_samples[0] += samples
@@ -248,9 +282,9 @@ class Wrapper():
         y_emotions_b = y_emotions_b.masked_select(y_mask_b)
         pairs_labels_b = pairs_labels_b.masked_select(pairs_mask_b)
 
-        binary_y_preds_e = (torch.sigmoid(preds_e) > self.threshold_emo).float()
-        binary_y_preds_c = (torch.sigmoid(preds_c) > self.threshold_cau).float()
-        binary_y_preds_p = (torch.sigmoid(preds_p) > self.threshold_pairs).float()
+        binary_y_preds_e = (torch.sigmoid(preds_e) > self.threshold).float()
+        binary_y_preds_c = (torch.sigmoid(preds_c) > self.threshold).float()
+        binary_y_preds_p = (torch.sigmoid(preds_p) > self.threshold).float()
 
         # print("binary preds e")
         # print(binary_y_preds_e)
@@ -282,7 +316,6 @@ class Wrapper():
         loss.backward()
         if (step + 1) % self.gradient_accumulation_steps == 0:
             self.optimizer.step()
-            self.model.zero_grad()
             self.optimizer.zero_grad()
         return loss.item(), correct_e, correct_c, correct_p, y_emotions_b, pairs_labels_b
 
@@ -366,9 +399,9 @@ class Wrapper():
         y_emotions_b = y_emotions_b.masked_select(y_mask_b)
         pairs_labels_b = pairs_labels_b.masked_select(pairs_mask_b)
 
-        binary_y_preds_e = (torch.sigmoid(preds_e) > self.threshold_emo).float()
-        binary_y_preds_c = (torch.sigmoid(preds_c) > self.threshold_cau).float()
-        binary_y_preds_p = (torch.sigmoid(preds_p) > self.threshold_pairs).float()
+        binary_y_preds_e = (torch.sigmoid(preds_e) > self.threshold).float()
+        binary_y_preds_c = (torch.sigmoid(preds_c) > self.threshold).float()
+        binary_y_preds_p = (torch.sigmoid(preds_p) > self.threshold).float()
 
         loss_p = self.pair_criterion(preds_p, pairs_labels_b)
         loss_e = self.criterion(preds_e, y_emotions_b)
