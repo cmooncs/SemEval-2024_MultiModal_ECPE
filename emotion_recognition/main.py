@@ -57,7 +57,7 @@ def parse(args):
     parser.add_argument("--causes_path",type=str,default="./data/saved/causes1.pkl",help="Path to already computed lengths of conversations. Defaults to './data/saved/causes1.pkl' for subtask 1")
     parser.add_argument("--given_emotions_path",type=str,default="./data/saved/given_emotions1.pkl",help="Path to already computed lengths of conversations. Defaults to './data/saved/given_emotions1.pkl' for subtask 1")
     # K-fold cross validation
-    parser.add_argument("--kfold",type=int,default=10,help="Value of k for k-fold cross val")
+    parser.add_argument("--kfold",type=int,default=5,help="Value of k for k-fold cross val")
     # Predictor model
     parser.add_argument("--threshold_emo",type=float,default=0.5045,help="Threshold applied after the sigmoid for getting True (1) predictions")
     parser.add_argument("--threshold_cau",type=float,default=0.4862,help="Threshold applied after the sigmoid for getting True (1) predictions")

@@ -9,7 +9,7 @@ import itertools
 
 class GAT(nn.Module):
     """References: https://github.com/Determined22/Rank-Emotion-Cause/blob/master/src/networks/rank_cp.py"""
-    def __init__(self, num_layers, num_heads_per_layer, num_features_per_layer, feat_dim, device,  dropout=0.1, bias=True):
+    def __init__(self, num_layers, num_heads_per_layer, num_features_per_layer, feat_dim, device,  dropout=0.6, bias=True):
         super(GAT, self).__init__()
         assert num_layers == len(num_heads_per_layer) == len(num_features_per_layer), f'Enter valid architecture parameters for GAT'
         in_dim = feat_dim
@@ -98,7 +98,7 @@ class GraphAttentionLayer(nn.Module):
         # Skip connection with learnable weights
         gate = F.sigmoid(self.H(in_emb))
         out_emb = gate * out_emb + (1 - gate) * in_emb # broadcast (b, 1, N, i), (b, N, i)
-        out_emb = F.dropout(out_emb, self.attn_dropout, training=self.training) # (b, N, i)
+        out_emb = F.dropout(out_emb, self.attn_dropout) # (b, N, i)
 
         return out_emb
 
@@ -136,15 +136,35 @@ class HyperbolicClassifier(nn.Module):
 class EmotionClassifier(nn.Module):
     def __init__(self, input_dim, hidden_dim, num_classes):
         super(EmotionClassifier, self).__init__()
-        self.linear = nn.Linear(input_dim, hidden_dim)
-        self.activation = nn.ReLU()
-        self.out = nn.Linear(hidden_dim, num_classes)
+        self.linear = nn.Linear(input_dim, num_classes)
+        # self.activation = nn.ReLU()
+        # self.out = nn.Linear(hidden_dim, num_classes)
 
     def forward(self, x):
         x = self.linear(x)
-        x = self.activation(x)
-        x = self.out(x)
+        # x = self.activation(x)
+        # x = self.out(x)
         return x
+
+class BiLSTMClassifier(nn.Module):
+    def __init__(self, input_dim, hidden_dim, num_layers, num_classes, device):
+        super(BiLSTMClassifier, self).__init__()
+        self.hidden_dim = hidden_dim
+        self.num_layers = num_layers
+        self.lstm = nn.LSTM(input_dim, hidden_dim, num_layers, batch_first=True, bidirectional=True)
+        self.fc = nn.Linear(hidden_dim * 2, num_classes)
+        self.device = device
+
+    def forward(self, x):
+        x = x.unsqueeze(1)
+        h0 = torch.zeros(self.num_layers * 2, x.size(0), self.hidden_dim).to(self.device)
+        c0 = torch.zeros(self.num_layers * 2, x.size(0), self.hidden_dim).to(self.device)
+        out, state = self.lstm(x, (h0, c0))
+        # print("out shape {}".format(out.shape))
+        out_last_tstep = out[:, -1, :]
+        logits = self.fc(out_last_tstep)
+
+        return logits
 
 class EmotionRecognitionModel(nn.Module):
     def __init__(self, args):
@@ -153,10 +173,13 @@ class EmotionRecognitionModel(nn.Module):
         self.args = args
         num_features_per_layer_gat = [args.num_features_per_layer_gat] * args.num_layers_gat
         num_heads_per_layer_gat = [args.num_heads_per_layer_gat] * args.num_layers_gat
+        num_bilstm_layers = 2
+        num_classes = 7
 
         self.bert_model = BertModel.from_pretrained('bert-base-uncased')
         self.gnn = GAT(args.num_layers_gat, num_heads_per_layer_gat, num_features_per_layer_gat, args.input_dim_transformer, args.device)
         self.emotion_classifier = EmotionClassifier(args.input_dim_transformer, args.input_dim_transformer // 2, 7)
+        # self.emotion_classifier = BiLSTMClassifier(args.input_dim_transformer, args.input_dim_transformer // 2, num_bilstm_layers, num_classes, self.args.device)
 
     def forward(self, bert_token_b, bert_segment_b, bert_masks_b, bert_utt_b, convo_len, adj, y_mask_b):
         bert_output = self.bert_model(input_ids=bert_token_b.to(self.args.device),

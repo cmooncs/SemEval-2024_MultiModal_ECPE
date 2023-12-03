@@ -9,6 +9,7 @@ import torch
 from sklearn.model_selection import train_test_split, KFold
 import json
 import time
+from sklearn.utils import class_weight
 
 # config for wandb
 def config(args):
@@ -83,6 +84,17 @@ def make_fold_files(args):
         print(f"Saving fold {fold}")
         data_trainval = np.array(data_trainval)
         train_data = data_trainval[train_idxs]
+        # compute class weights from train data
+        emotion_idx = dict(zip(['anger', 'disgust', 'fear', 'sadness', 'neutral','joy','surprise'], range(7)))
+        file_weights = os.path.join(save_dir, 'fold{}_classes'.format(fold))
+        y = []
+        for conv in train_data:
+            for utt in conv['conversation']:
+                emotion_name = utt["emotion"]
+                y.append(emotion_idx[emotion_name])
+        y = np.array(y)
+        np.save(file_weights, y)
+
         save_file = os.path.join(save_dir, 'fold{}_train.json'.format(fold))
         with open(save_file, 'w') as f1:
             json.dump(train_data.tolist(), f1)

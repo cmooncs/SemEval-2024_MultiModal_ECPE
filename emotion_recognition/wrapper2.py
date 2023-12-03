@@ -15,6 +15,7 @@ from sklearn.metrics import precision_recall_curve
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.metrics import classification_report
+from sklearn.utils.class_weight import compute_class_weight
 
 from models import EmotionRecognitionModel
 from transformers import get_linear_schedule_with_warmup
@@ -57,6 +58,14 @@ class Wrapper():
             self.val_loader = build_inference_data(args, fold_id, data_type='valid')
             # self.test_loader = build_inference_data(args, fold_id, data_type='test')
 
+            # compute weights for classes
+            self.classes_file = join(args.input_dir, args.text_input_dir, f"s2_split{args.kfold}", "fold{}_classes.npy".format(fold_id))
+            y = np.load(self.classes_file)
+            print(y)
+            class_weights=class_weight.compute_class_weight(class_weight='balanced',classes=np.unique(y),y=y)
+            print(class_weights)
+            self.class_weights=torch.tensor(class_weights,dtype=torch.float).to(self.device)
+
             train_losses = []
             val_losses = []
             train_accuracy_list = []
@@ -71,7 +80,7 @@ class Wrapper():
             self.ohe = OneHotEncoder(categories=self.emotion_labels)
             self.model = EmotionRecognitionModel(args)
             self.model.to(self.device)
-            self.criterion = nn.CrossEntropyLoss()
+            self.criterion = nn.CrossEntropyLoss(weight=self.class_weights)
             self.optimizer = optim.Adam(self.model.parameters(), lr=self.lr)
             self.num_update_steps = len(self.train_loader) // self.gradient_accumulation_steps * self.num_epochs
             self.warmup_steps = self.warmup_proportion * self.num_update_steps
@@ -120,6 +129,9 @@ class Wrapper():
         y_mask_b = torch.tensor(y_mask_b).bool().to(self.device)
         self.model.train()
         preds_e = self.model(bert_token_b, bert_segment_b, bert_masks_b, bert_utt_b, convo_len_b, adj_b, y_mask_b)
+
+        # y_mask_b_new = y_mask_b.unsqueeze(2).expand(-1, -1, 7)
+        # preds_e = preds_e.masked_select(y_mask_b_new).reshape(-1, 7)
         y_emotions_b = torch.tensor(y_emotions_b, dtype=torch.float32).to(self.device)
         y_emotions_b = y_emotions_b.type(torch.LongTensor).to(self.device)
         y_emotions_b = y_emotions_b.masked_select(y_mask_b)
@@ -128,11 +140,15 @@ class Wrapper():
         # print("preds")
         # print(preds_e.is_cuda)
 
-        loss_e = self.criterion(preds_e, y_emotions_b)
-        loss = loss_e
+        loss = self.criterion(preds_e, y_emotions_b)
         # loss = loss / self.gradient_accumulation_steps
 
+        print("preds e")
+        print(preds_e)
+
         correct_e = (torch.argmax(preds_e, 1) == y_emotions_b).float().sum()
+        for p, e in zip(torch.argmax(preds_e, 1), y_emotions_b):
+            print("Predicted = {} True = {}".format(p, e))
 
         loss.backward()
         self.model.zero_grad()
@@ -164,14 +180,22 @@ class Wrapper():
         y_mask_b = torch.tensor(y_mask_b).bool().to(self.device)
         self.model.eval()
         preds_e = self.model(bert_token_b, bert_segment_b, bert_masks_b, bert_utt_b, convo_len_b, adj_b, y_mask_b)
+
+        # y_mask_b_new = y_mask_b.unsqueeze(2).expand(-1, -1, 7)
+        # preds_e = preds_e.masked_select(y_mask_b_new).reshape(-1, 7)
         y_emotions_b = torch.tensor(y_emotions_b, dtype=torch.float32).to(self.device)
         y_emotions_b = y_emotions_b.type(torch.LongTensor).to(self.device)
         y_emotions_b = y_emotions_b.masked_select(y_mask_b)
 
-        loss_e = self.criterion(preds_e, y_emotions_b)
-        loss = loss_e
+        loss = self.criterion(preds_e, y_emotions_b)
+
+        print("preds e")
+        print(preds_e)
 
         preds_e = torch.argmax(preds_e, 1)
+        for p, e in zip(preds_e, y_emotions_b):
+            print("Predicted = {} True = {}".format(p, e))
+
         classification_rep = classification_report(y_emotions_b.cpu().numpy(), preds_e.cpu().numpy(), labels=[0,1,2,3,4,5,6], target_names=self.emotion_idx.keys(), output_dict=True)
 
         wandb.log({"epoch": epoch+1, "step_val_loss":loss.item()})
