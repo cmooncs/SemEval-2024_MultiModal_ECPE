@@ -1,0 +1,13 @@
+pandas
+numpy
+scikit-learn
+accelerate
+peft
+bitsandbytes
+transformers
+trl
+huggingface_hub
+datasets
+wandb
+matplotlib
+seaborn
