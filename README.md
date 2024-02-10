@@ -23,6 +23,12 @@ We have experimented wtih two LLM-based approaches for the subtask-2 i.e. the mu
 │   ├── requirements.txt
 │   └── eval_videos
 ├── Llama2
+│   ├── cause_inference.ipynb
+│   ├── cause_prediction_training.ipynb
+│   ├── emotion_inference.ipynb
+│   ├── emotion_recognition_training.ipynb
+│   ├── generate_input.py
+│   └── requirements.txt
 ├── old_experiments
 ├── README.md
 ```
