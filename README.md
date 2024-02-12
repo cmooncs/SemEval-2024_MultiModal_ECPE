@@ -2,7 +2,7 @@
 
 This repository contains all the code and usage instructions related to models proposed and implemented by team JMI for the Multimodal Emotion Cause Pair Extraction task at SemEval 2024.
 
-We have experimented wtih two LLM-based approaches for the subtask-2 i.e. the multimodal task that both gave competitive results.
+We have experimented with two LLM-based approaches for the subtask-2 i.e. the multimodal task that both gave competitive results.
 1. GPT-4 Vision for Video Captioning and Few-shot prompting GPT-3.5 using RAG for Emotion and Cause Prediction (**Best Results**)
 2. Fine-tuning LLaMA2 for Emotion and Cause Prediction.
 
